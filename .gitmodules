@@ -1,0 +1,3 @@
+[submodule "android/libs/ExoPlayer"]
+	path = android/libs/ExoPlayer
+	url = https://github.com/waltojac/ExoPlayer.git
