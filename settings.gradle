@@ -1,0 +1,5 @@
+include ':better_player'
+include ':exoplayer'
+
+project(':better_player').projectDir = file('android')
+project(':exoplayer').projectDir = file('android/libs/ExoPlayer')
