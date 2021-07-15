@@ -1,4 +1,4 @@
-rootProject.name = 'better_player'
+//rootProject.name = 'better_player'
 
 gradle.ext.exoplayerRoot = "${rootProject.projectDir}/../packages/betterplayer/android/libs/ExoPlayer"
 gradle.ext.exoplayerModulePrefix = 'exoplayer-'
