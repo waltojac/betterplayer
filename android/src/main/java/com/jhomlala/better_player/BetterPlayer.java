@@ -8,9 +8,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -19,6 +24,7 @@ import android.view.Surface;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Observer;
 import androidx.media.session.MediaButtonReceiver;
 import androidx.work.Data;
@@ -46,6 +52,7 @@ import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
 import com.google.android.exoplayer2.drm.UnsupportedDrmException;
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
+import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ClippingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -76,6 +83,7 @@ import java.util.UUID;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.view.TextureRegistry;
+import okhttp3.OkHttpClient;
 
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_ALL;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_OFF;
@@ -193,29 +201,72 @@ final class BetterPlayer {
             drmSessionManager = null;
         }
 
-        if (DataSourceUtils.isHTTP(uri)) {
-            dataSourceFactory = getDataSourceFactory(userAgent, headers);
+//        if (DataSourceUtils.isHTTP(uri)) {
+//            dataSourceFactory = getDataSourceFactory(userAgent, headers);
+//
+//            if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
+//                dataSourceFactory =
+//                        new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
+//            }
+//        } else {
+//            dataSourceFactory = new DefaultDataSourceFactory(context, userAgent);
+//        }
 
-            if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
-                dataSourceFactory =
-                        new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
-            }
-        } else {
-            dataSourceFactory = new DefaultDataSourceFactory(context, userAgent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getOkHttpDataSourceFactory(context, uri, formatHint, cacheKey, overriddenDuration, result);
         }
-
-        MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, cacheKey, context);
-        if (overriddenDuration != 0) {
-            ClippingMediaSource clippingMediaSource = new ClippingMediaSource(mediaSource, 0, overriddenDuration * 1000);
-            exoPlayer.setMediaSource(clippingMediaSource);
-        } else {
-            exoPlayer.setMediaSource(mediaSource);
-        }
-        exoPlayer.prepare();
-
-        result.success(null);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void getOkHttpDataSourceFactory(Context context, Uri uri, String formatHint, String cacheKey, long overriddenDuration, Result result) {
+        NetworkRequest wifiRequest = new NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build();
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        connectivityManager.requestNetwork(wifiRequest, new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(Network network) {
+                super.onAvailable(network);
+
+                OkHttpClient client = new OkHttpClient.Builder()
+                        .socketFactory(network.getSocketFactory()).build();
+
+                fininshMediaSourceSetup(context, uri, formatHint, cacheKey, overriddenDuration, new OkHttpDataSource.Factory(client), result);
+
+                // do remove callback. if you forget to remove it, you will received callback when cellular connect again.
+                connectivityManager.unregisterNetworkCallback(this);
+            }
+
+            @Override
+            public void onUnavailable() {
+                super.onUnavailable();
+
+                result.error("ERROR", "Wifi network unavailable.", null);
+
+                // do remove callback
+                connectivityManager.unregisterNetworkCallback(this);
+            }
+        });
+    }
+
+    private void fininshMediaSourceSetup(Context context, Uri uri, String formatHint, String cacheKey, long overriddenDuration, OkHttpDataSource.Factory factory, Result result) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        Runnable runnable = () -> {
+            MediaSource mediaSource = buildMediaSource(uri, factory, formatHint, cacheKey, context);
+            if (overriddenDuration != 0) {
+                ClippingMediaSource clippingMediaSource = new ClippingMediaSource(mediaSource, 0, overriddenDuration * 1000);
+                exoPlayer.setMediaSource(clippingMediaSource);
+            } else {
+                exoPlayer.setMediaSource(mediaSource);
+            }
+            exoPlayer.prepare();
+
+            result.success(null);
+        };
+        handler.post(runnable);
+    }
 
     public void setupPlayerNotification(Context context, String title, String author,
                                         String imageUrl, String notificationChannelName,
