@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:io';
 
 // Project imports:
+import 'package:better_player/better_player.dart';
 import 'package:better_player/src/configuration/better_player_buffering_configuration.dart';
 import 'package:better_player/src/video_player/video_player_platform_interface.dart';
 
@@ -49,8 +50,7 @@ class VideoPlayerValue {
 
   /// Returns an instance with a `null` [Duration] and the given
   /// [errorDescription].
-  VideoPlayerValue.erroneous(String errorDescription)
-      : this(duration: null, errorDescription: errorDescription);
+  VideoPlayerValue.erroneous(String errorDescription) : this(duration: null, errorDescription: errorDescription);
 
   /// The total duration of the video.
   ///
@@ -185,8 +185,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     _create();
   }
 
-  final StreamController<VideoEvent> videoEventStreamController =
-      StreamController.broadcast();
+  final StreamController<VideoEvent> videoEventStreamController = StreamController.broadcast();
   final Completer<void> _creatingCompleter = Completer<void>();
   int? _textureId;
 
@@ -278,9 +277,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       }
     }
 
-    _eventSubscription = _videoPlayerPlatform
-        .videoEventsFor(_textureId)
-        .listen(eventListener, onError: errorListener);
+    _eventSubscription = _videoPlayerPlatform.videoEventsFor(_textureId).listen(eventListener, onError: errorListener);
   }
 
   /// Set data source for playing a video from an asset.
@@ -321,7 +318,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// The URI for the video is given by the [dataSource] argument and must not be
   /// null.
   /// **Android only**: The [formatHint] option allows the caller to override
-  /// the video format detection code.
+  /// the video format detection code. The [networkType] options allows the caller
+  /// to specify if they want the video to stream only over "WIFI" or "CELLULAR".
   Future<void> setNetworkDataSource(
     String dataSource, {
     VideoFormat? formatHint,
@@ -340,6 +338,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     String? certificateUrl,
     Map<String, String>? drmHeaders,
     String? activityName,
+    NetworkType? networkType,
   }) {
     return _setDataSource(
       DataSource(
@@ -361,6 +360,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         certificateUrl: certificateUrl,
         drmHeaders: drmHeaders,
         activityName: activityName,
+        networkType: networkType?.value(),
       ),
     );
   }
@@ -408,8 +408,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
     _initializingCompleter = Completer<void>();
 
-    await VideoPlayerPlatform.instance
-        .setDataSource(_textureId, dataSourceDescription);
+    await VideoPlayerPlatform.instance.setDataSource(_textureId, dataSourceDescription);
     return _initializingCompleter.future;
   }
 
@@ -480,8 +479,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           _updatePosition(newPosition, absolutePosition: newAbsolutePosition);
 
           if (_seekTime != null) {
-            final difference = DateTime.now().millisecondsSinceEpoch -
-                _seekTime!.millisecondsSinceEpoch;
+            final difference = DateTime.now().millisecondsSinceEpoch - _seekTime!.millisecondsSinceEpoch;
             if (difference > 400) {
               _seekPosition = null;
               _seekTime = null;
@@ -589,14 +587,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// [height] specifies height of the selected track
   /// [bitrate] specifies bitrate of the selected track
   Future<void> setTrackParameters(int? width, int? height, int? bitrate) async {
-    await _videoPlayerPlatform.setTrackParameters(
-        _textureId, width, height, bitrate);
+    await _videoPlayerPlatform.setTrackParameters(_textureId, width, height, bitrate);
   }
 
-  Future<void> enablePictureInPicture(
-      {double? top, double? left, double? width, double? height}) async {
-    await _videoPlayerPlatform.enablePictureInPicture(
-        textureId, top, left, width, height);
+  Future<void> enablePictureInPicture({double? top, double? left, double? width, double? height}) async {
+    await _videoPlayerPlatform.enablePictureInPicture(textureId, top, left, width, height);
   }
 
   Future<void> disablePictureInPicture() async {
@@ -695,9 +690,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return _textureId == null
-        ? Container()
-        : _videoPlayerPlatform.buildView(_textureId);
+    return _textureId == null ? Container() : _videoPlayerPlatform.buildView(_textureId);
   }
 }
 

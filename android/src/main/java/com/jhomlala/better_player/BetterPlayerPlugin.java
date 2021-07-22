@@ -78,6 +78,7 @@ public class BetterPlayerPlugin implements FlutterPlugin, ActivityAware, MethodC
     public static final String BUFFER_FOR_PLAYBACK_MS = "bufferForPlaybackMs";
     public static final String BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = "bufferForPlaybackAfterRebufferMs";
     public static final String CACHE_KEY_PARAMETER = "cacheKey";
+    public static final String NETWORK_TYPE_KEY = "networkType";
 
 
     private static final String INIT_METHOD = "init";
@@ -317,7 +318,9 @@ public class BetterPlayerPlugin implements FlutterPlugin, ActivityAware, MethodC
                     0L,
                     overriddenDuration.longValue(),
                     null,
-                    null, null
+                    null,
+                    null,
+                    null
             );
         } else {
             boolean useCache = getParameter(dataSource, USE_CACHE_PARAMETER, false);
@@ -330,6 +333,9 @@ public class BetterPlayerPlugin implements FlutterPlugin, ActivityAware, MethodC
             String formatHint = getParameter(dataSource, FORMAT_HINT_PARAMETER, null);
             String licenseUrl = getParameter(dataSource, LICENSE_URL_PARAMETER, null);
             Map<String, String> drmHeaders = getParameter(dataSource, DRM_HEADERS_PARAMETER, new HashMap<>());
+            String networkTypeString = getParameter(dataSource, NETWORK_TYPE_KEY, null);
+            DataSourceUtils.NetworkType networkType = DataSourceUtils.NetworkType.valueOf(networkTypeString);
+
             player.setDataSource(
                     flutterState.applicationContext,
                     key,
@@ -343,7 +349,8 @@ public class BetterPlayerPlugin implements FlutterPlugin, ActivityAware, MethodC
                     overriddenDuration.longValue(),
                     licenseUrl,
                     drmHeaders,
-                    cacheKey
+                    cacheKey,
+                    networkType
             );
         }
     }

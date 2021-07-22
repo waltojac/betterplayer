@@ -155,7 +155,7 @@ final class BetterPlayer {
             Context context, String key, String dataSource, String formatHint, Result result,
             Map<String, String> headers, boolean useCache, long maxCacheSize, long maxCacheFileSize,
             long overriddenDuration, String licenseUrl, Map<String, String> drmHeaders,
-            String cacheKey) {
+            String cacheKey, DataSourceUtils.NetworkType networkType) {
         this.key = key;
         isInitialized = false;
 
@@ -201,31 +201,40 @@ final class BetterPlayer {
             drmSessionManager = null;
         }
 
-//        if (DataSourceUtils.isHTTP(uri)) {
-//            dataSourceFactory = getDataSourceFactory(userAgent, headers);
-//
-//            if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
-//                dataSourceFactory =
-//                        new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
-//            }
-//        } else {
-//            dataSourceFactory = new DefaultDataSourceFactory(context, userAgent);
-//        }
+        if (networkType != null) {
+            // Network type was specified, so use a custom data factory on the correct network.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getOkHttpDataSourceFactory(context, networkType, uri, formatHint, cacheKey, overriddenDuration, result);
+            }
+        } else {
+            if (DataSourceUtils.isHTTP(uri)) {
+                dataSourceFactory = getDataSourceFactory(userAgent, headers);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getOkHttpDataSourceFactory(context, uri, formatHint, cacheKey, overriddenDuration, result);
+                if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
+                    dataSourceFactory =
+                            new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
+                }
+            } else {
+                dataSourceFactory = new DefaultDataSourceFactory(context, userAgent);
+            }
+
+            finishMediaSourceSetup(context, uri, formatHint, cacheKey, overriddenDuration, dataSourceFactory, result);
         }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void getOkHttpDataSourceFactory(Context context, Uri uri, String formatHint, String cacheKey, long overriddenDuration, Result result) {
-        NetworkRequest wifiRequest = new NetworkRequest.Builder()
-                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build();
+    private void getOkHttpDataSourceFactory(Context context, DataSourceUtils.NetworkType networkType, Uri uri, String formatHint, String cacheKey, long overriddenDuration, Result result) {
+        NetworkRequest.Builder networkRequestBuilder = new NetworkRequest.Builder();
+        if (networkType == DataSourceUtils.NetworkType.CELLULAR) {
+            networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        } else if (networkType == DataSourceUtils.NetworkType.WIFI) {
+            networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        }
 
+        NetworkRequest networkRequest = networkRequestBuilder.build();
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        connectivityManager.requestNetwork(wifiRequest, new ConnectivityManager.NetworkCallback() {
+        connectivityManager.requestNetwork(networkRequest, new ConnectivityManager.NetworkCallback() {
             @Override
             public void onAvailable(Network network) {
                 super.onAvailable(network);
@@ -233,7 +242,7 @@ final class BetterPlayer {
                 OkHttpClient client = new OkHttpClient.Builder()
                         .socketFactory(network.getSocketFactory()).build();
 
-                fininshMediaSourceSetup(context, uri, formatHint, cacheKey, overriddenDuration, new OkHttpDataSource.Factory(client), result);
+                finishMediaSourceSetup(context, uri, formatHint, cacheKey, overriddenDuration, new OkHttpDataSource.Factory(client), result);
 
                 // do remove callback. if you forget to remove it, you will received callback when cellular connect again.
                 connectivityManager.unregisterNetworkCallback(this);
@@ -251,7 +260,7 @@ final class BetterPlayer {
         });
     }
 
-    private void fininshMediaSourceSetup(Context context, Uri uri, String formatHint, String cacheKey, long overriddenDuration, OkHttpDataSource.Factory factory, Result result) {
+    private void finishMediaSourceSetup(Context context, Uri uri, String formatHint, String cacheKey, long overriddenDuration, DataSource.Factory factory, Result result) {
         Handler handler = new Handler(Looper.getMainLooper());
         Runnable runnable = () -> {
             MediaSource mediaSource = buildMediaSource(uri, factory, formatHint, cacheKey, context);

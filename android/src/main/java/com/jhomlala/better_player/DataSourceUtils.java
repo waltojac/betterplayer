@@ -12,6 +12,11 @@ class DataSourceUtils {
     private static final String USER_AGENT = "User-Agent";
     private static final String USER_AGENT_PROPERTY = "http.agent";
 
+    enum NetworkType {
+        WIFI,
+        CELLULAR
+    }
+
     static String getUserAgent(Map<String, String> headers){
         String userAgent = System.getProperty(USER_AGENT_PROPERTY);
         if (headers != null && headers.containsKey(USER_AGENT)) {
