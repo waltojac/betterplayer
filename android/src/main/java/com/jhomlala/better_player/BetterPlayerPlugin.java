@@ -334,7 +334,7 @@ public class BetterPlayerPlugin implements FlutterPlugin, ActivityAware, MethodC
             String licenseUrl = getParameter(dataSource, LICENSE_URL_PARAMETER, null);
             Map<String, String> drmHeaders = getParameter(dataSource, DRM_HEADERS_PARAMETER, new HashMap<>());
             String networkTypeString = getParameter(dataSource, NETWORK_TYPE_KEY, null);
-            DataSourceUtils.NetworkType networkType = DataSourceUtils.NetworkType.valueOf(networkTypeString);
+            DataSourceUtils.NetworkType networkType = networkTypeString != null ? DataSourceUtils.NetworkType.valueOf(networkTypeString) : null;
 
             player.setDataSource(
                     flutterState.applicationContext,
