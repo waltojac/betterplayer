@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath 'com.android.tools.build:gradle:3.3.0'
     }
 }
 
@@ -40,14 +40,13 @@ android {
 
     dependencies {
         implementation("com.squareup.okhttp3:okhttp:4.9.0")
-
-        implementation project(':exoplayer-library-core')
-        implementation project(':exoplayer-extension-okhttp')
-        implementation project(':exoplayer-library-hls')
-        implementation project(':exoplayer-library-dash')
-        implementation project(':exoplayer-library-smoothstreaming')
-        implementation project(':exoplayer-library-ui')
-        implementation project(':exoplayer-extension-mediasession')
+        implementation 'com.google.android.exoplayer:exoplayer-core:2.14.2'
+        implementation 'com.google.android.exoplayer:exoplayer-hls:2.14.2'
+        implementation 'com.google.android.exoplayer:exoplayer-dash:2.14.2'
+        implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.14.2'
+        implementation 'com.google.android.exoplayer:exoplayer-ui:2.14.2'
+        implementation 'com.google.android.exoplayer:extension-mediasession:2.14.2'
+        implementation 'com.google.android.exoplayer:extension-okhttp:2.14.2'
         implementation "android.arch.lifecycle:runtime:1.1.1"
         implementation "android.arch.lifecycle:common:1.1.1"
         implementation "android.arch.lifecycle:common-java8:1.1.1"
