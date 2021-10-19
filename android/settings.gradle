@@ -1,5 +1,1 @@
-//rootProject.name = 'better_player'
-
-gradle.ext.exoplayerRoot = "${rootProject.projectDir}/../packages/betterplayer/android/libs/ExoPlayer"
-gradle.ext.exoplayerModulePrefix = 'exoplayer-'
-apply from: file("$gradle.ext.exoplayerRoot/core_settings.gradle")
+rootProject.name = 'better_player'
