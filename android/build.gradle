@@ -39,7 +39,6 @@ android {
     }
 
     dependencies {
-        implementation("com.squareup.okhttp3:okhttp:4.9.0")
         implementation 'com.google.android.exoplayer:exoplayer-core:2.14.2'
         implementation 'com.google.android.exoplayer:exoplayer-hls:2.14.2'
         implementation 'com.google.android.exoplayer:exoplayer-dash:2.14.2'
@@ -47,12 +46,13 @@ android {
         implementation 'com.google.android.exoplayer:exoplayer-ui:2.14.2'
         implementation 'com.google.android.exoplayer:extension-mediasession:2.14.2'
         implementation 'com.google.android.exoplayer:extension-okhttp:2.14.2'
+        implementation("com.squareup.okhttp3:okhttp:4.9.0")
         implementation "android.arch.lifecycle:runtime:1.1.1"
         implementation "android.arch.lifecycle:common:1.1.1"
         implementation "android.arch.lifecycle:common-java8:1.1.1"
-        implementation 'androidx.annotation:annotation:1.2.0'
+        implementation 'androidx.annotation:annotation:1.1.0'
         implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-        implementation "androidx.work:work-runtime:2.6.0-beta01"
+        implementation "androidx.work:work-runtime:2.5.0"
     }
 }
 

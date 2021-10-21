@@ -52,7 +52,8 @@ abstract class VideoPlayerPlatform {
       try {
         instance._verifyProvidesDefaultImplementations();
       } catch (_) {
-        throw AssertionError('Platform interfaces must not be implemented with `implements`');
+        throw AssertionError(
+            'Platform interfaces must not be implemented with `implements`');
       }
     }
     _instance = instance;
@@ -72,7 +73,8 @@ abstract class VideoPlayerPlatform {
   }
 
   /// Creates an instance of a video player and returns its textureId.
-  Future<int?> create({BetterPlayerBufferingConfiguration? bufferingConfiguration}) {
+  Future<int?> create(
+      {BetterPlayerBufferingConfiguration? bufferingConfiguration}) {
     throw UnimplementedError('create() has not been implemented.');
   }
 
@@ -82,7 +84,7 @@ abstract class VideoPlayerPlatform {
   }
 
   /// Pre-caches a video.
-  Future<void> stopPreCache(String url) {
+  Future<void> stopPreCache(String url, String? cacheKey) {
     throw UnimplementedError('stopPreCache() has not been implemented.');
   }
 
@@ -122,7 +124,8 @@ abstract class VideoPlayerPlatform {
   }
 
   /// Sets the video track parameters (used to select quality of the video)
-  Future<void> setTrackParameters(int? textureId, int? width, int? height, int? bitrate) {
+  Future<void> setTrackParameters(
+      int? textureId, int? width, int? height, int? bitrate) {
     throw UnimplementedError('setTrackParameters() has not been implemented.');
   }
 
@@ -142,17 +145,21 @@ abstract class VideoPlayerPlatform {
   }
 
   ///Enables PiP mode.
-  Future<void> enablePictureInPicture(int? textureId, double? top, double? left, double? width, double? height) {
-    throw UnimplementedError('enablePictureInPicture() has not been implemented.');
+  Future<void> enablePictureInPicture(int? textureId, double? top, double? left,
+      double? width, double? height) {
+    throw UnimplementedError(
+        'enablePictureInPicture() has not been implemented.');
   }
 
   ///Disables PiP mode.
   Future<void> disablePictureInPicture(int? textureId) {
-    throw UnimplementedError('disablePictureInPicture() has not been implemented.');
+    throw UnimplementedError(
+        'disablePictureInPicture() has not been implemented.');
   }
 
   Future<bool?> isPictureInPictureEnabled(int? textureId) {
-    throw UnimplementedError('isPictureInPictureEnabled() has not been implemented.');
+    throw UnimplementedError(
+        'isPictureInPictureEnabled() has not been implemented.');
   }
 
   Future<void> setAudioTrack(int? textureId, String? name, int? index) {
@@ -174,7 +181,7 @@ abstract class VideoPlayerPlatform {
 
   // This method makes sure that VideoPlayer isn't implemented with `implements`.
   //
-  // See class doc for more details on why implementing this class is forbidden.
+  // See class docs for more details on why implementing this class is forbidden.
   //
   // This private method is called by the instance setter, which fails if the class is
   // implemented with `implements`.
@@ -226,6 +233,8 @@ class DataSource {
     this.drmHeaders,
     this.activityName,
     this.networkType,
+    this.clearKey,
+    this.videoExtension,
   }) : assert(uri == null || asset == null);
 
   /// Describes the type of data source this [VideoPlayerController]
@@ -301,6 +310,10 @@ class DataSource {
   final String? activityName;
 
   final String? networkType;
+
+  final String? clearKey;
+
+  final String? videoExtension;
 
   /// Key to compare DataSource
   String get key {
@@ -406,11 +419,22 @@ class VideoEvent {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) || other is VideoEvent && runtimeType == other.runtimeType && key == other.key && eventType == other.eventType && duration == other.duration && size == other.size && listEquals(buffered, other.buffered);
+    return identical(this, other) ||
+        other is VideoEvent &&
+            runtimeType == other.runtimeType &&
+            key == other.key &&
+            eventType == other.eventType &&
+            duration == other.duration &&
+            size == other.size &&
+            listEquals(buffered, other.buffered);
   }
 
   @override
-  int get hashCode => eventType.hashCode ^ duration.hashCode ^ size.hashCode ^ buffered.hashCode;
+  int get hashCode =>
+      eventType.hashCode ^
+      duration.hashCode ^
+      size.hashCode ^
+      buffered.hashCode;
 }
 
 /// Type of the event.
@@ -501,7 +525,12 @@ class DurationRange {
   String toString() => '$runtimeType(start: $start, end: $end)';
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DurationRange && runtimeType == other.runtimeType && start == other.start && end == other.end;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DurationRange &&
+          runtimeType == other.runtimeType &&
+          start == other.start &&
+          end == other.end;
 
   @override
   int get hashCode => start.hashCode ^ end.hashCode;
