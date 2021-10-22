@@ -1,3 +1,0 @@
-include ':better_player'
-
-project(':better_player').projectDir = file('android')
