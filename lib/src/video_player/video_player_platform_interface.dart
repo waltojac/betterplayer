@@ -8,7 +8,6 @@ import 'dart:ui';
 
 // Flutter imports:
 import 'package:better_player/src/configuration/better_player_buffering_configuration.dart';
-import 'package:better_player/src/configuration/better_player_network_type.dart';
 import 'package:better_player/src/video_player/video_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';

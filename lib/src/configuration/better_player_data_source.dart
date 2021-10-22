@@ -93,7 +93,8 @@ class BetterPlayerDataSource {
     this.asmsTrackNames,
     this.resolutions,
     this.cacheConfiguration,
-    this.notificationConfiguration = const BetterPlayerNotificationConfiguration(
+    this.notificationConfiguration =
+        const BetterPlayerNotificationConfiguration(
       showNotification: false,
     ),
     this.overriddenDuration,
@@ -103,7 +104,11 @@ class BetterPlayerDataSource {
     this.placeholder,
     this.bufferingConfiguration = const BetterPlayerBufferingConfiguration(),
     this.networkType,
-  }) : assert((type == BetterPlayerDataSourceType.network || type == BetterPlayerDataSourceType.file) || (type == BetterPlayerDataSourceType.memory && bytes?.isNotEmpty == true),
+  }) : assert(
+            (type == BetterPlayerDataSourceType.network ||
+                    type == BetterPlayerDataSourceType.file) ||
+                (type == BetterPlayerDataSourceType.memory &&
+                    bytes?.isNotEmpty == true),
             "Url can't be null in network or file data source | bytes can't be null when using memory data source");
 
   ///Factory method to build network data source which uses url as data source
@@ -118,12 +123,14 @@ class BetterPlayerDataSource {
     bool? useAsmsAudioTracks,
     Map<String, String>? qualities,
     BetterPlayerCacheConfiguration? cacheConfiguration,
-    BetterPlayerNotificationConfiguration notificationConfiguration = const BetterPlayerNotificationConfiguration(showNotification: false),
+    BetterPlayerNotificationConfiguration notificationConfiguration =
+        const BetterPlayerNotificationConfiguration(showNotification: false),
     Duration? overriddenDuration,
     BetterPlayerVideoFormat? videoFormat,
     BetterPlayerDrmConfiguration? drmConfiguration,
     Widget? placeholder,
-    BetterPlayerBufferingConfiguration bufferingConfiguration = const BetterPlayerBufferingConfiguration(),
+    BetterPlayerBufferingConfiguration bufferingConfiguration =
+        const BetterPlayerBufferingConfiguration(),
     NetworkType? networkType,
   }) {
     return BetterPlayerDataSource(
@@ -168,7 +175,8 @@ class BetterPlayerDataSource {
       useAsmsTracks: useAsmsTracks,
       resolutions: qualities,
       cacheConfiguration: cacheConfiguration,
-      notificationConfiguration: notificationConfiguration = const BetterPlayerNotificationConfiguration(showNotification: false),
+      notificationConfiguration: notificationConfiguration =
+          const BetterPlayerNotificationConfiguration(showNotification: false),
       overriddenDuration: overriddenDuration,
       placeholder: placeholder,
     );
@@ -198,7 +206,8 @@ class BetterPlayerDataSource {
       useAsmsTracks: useAsmsTracks,
       resolutions: qualities,
       cacheConfiguration: cacheConfiguration,
-      notificationConfiguration: notificationConfiguration = const BetterPlayerNotificationConfiguration(showNotification: false),
+      notificationConfiguration: notificationConfiguration =
+          const BetterPlayerNotificationConfiguration(showNotification: false),
       overriddenDuration: overriddenDuration,
       placeholder: placeholder,
     );
@@ -216,13 +225,15 @@ class BetterPlayerDataSource {
     bool? useAsmsAudioTracks,
     Map<String, String>? resolutions,
     BetterPlayerCacheConfiguration? cacheConfiguration,
-    BetterPlayerNotificationConfiguration? notificationConfiguration = const BetterPlayerNotificationConfiguration(showNotification: false),
+    BetterPlayerNotificationConfiguration? notificationConfiguration =
+        const BetterPlayerNotificationConfiguration(showNotification: false),
     Duration? overriddenDuration,
     BetterPlayerVideoFormat? videoFormat,
     String? videoExtension,
     BetterPlayerDrmConfiguration? drmConfiguration,
     Widget? placeholder,
-    BetterPlayerBufferingConfiguration? bufferingConfiguration = const BetterPlayerBufferingConfiguration(),
+    BetterPlayerBufferingConfiguration? bufferingConfiguration =
+        const BetterPlayerBufferingConfiguration(),
   }) {
     return BetterPlayerDataSource(
       type ?? this.type,
@@ -236,13 +247,15 @@ class BetterPlayerDataSource {
       useAsmsAudioTracks: useAsmsAudioTracks ?? this.useAsmsAudioTracks,
       resolutions: resolutions ?? this.resolutions,
       cacheConfiguration: cacheConfiguration ?? this.cacheConfiguration,
-      notificationConfiguration: notificationConfiguration ?? this.notificationConfiguration,
+      notificationConfiguration:
+          notificationConfiguration ?? this.notificationConfiguration,
       overriddenDuration: overriddenDuration ?? this.overriddenDuration,
       videoFormat: videoFormat ?? this.videoFormat,
       videoExtension: videoExtension ?? this.videoExtension,
       drmConfiguration: drmConfiguration ?? this.drmConfiguration,
       placeholder: placeholder ?? this.placeholder,
-      bufferingConfiguration: bufferingConfiguration ?? this.bufferingConfiguration,
+      bufferingConfiguration:
+          bufferingConfiguration ?? this.bufferingConfiguration,
     );
   }
 }

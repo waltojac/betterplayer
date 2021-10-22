@@ -1,3 +1,4 @@
+import 'package:better_player/better_player.dart';
 import 'package:better_player/src/video_player/video_player.dart';
 import 'package:better_player/src/video_player/video_player_platform_interface.dart';
 
@@ -72,6 +73,7 @@ class MockVideoPlayerController extends VideoPlayerController {
     String? certificateUrl,
     Map<String, String>? drmHeaders,
     String? activityName,
+    NetworkType? networkType,
     String? clearKey,
     String? videoExtension,
   }) async {}
