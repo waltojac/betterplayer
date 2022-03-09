@@ -9,6 +9,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -19,6 +23,8 @@ import com.jhomlala.better_player.DataSourceUtils.getDataSourceFactory
 import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry.SurfaceTextureEntry
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.MethodChannel.Result
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import android.support.v4.media.session.MediaSessionCompat
@@ -43,6 +49,7 @@ import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import android.view.Surface
 import androidx.lifecycle.Observer
+import androidx.annotation.RequiresApi
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource
 import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource
 import com.google.android.exoplayer2.source.dash.DashMediaSource
@@ -57,6 +64,7 @@ import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.drm.DrmSessionManagerProvider
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.util.Util
@@ -66,6 +74,8 @@ import java.lang.IllegalStateException
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
+import okhttp3.OkHttpClient
+import okhttp3.*
 
 internal class BetterPlayer(
     context: Context,
@@ -126,6 +136,7 @@ internal class BetterPlayer(
         licenseUrl: String?,
         drmHeaders: Map<String, String>?,
         cacheKey: String?,
+        networkType: DataSourceUtils.NetworkType?,
         clearKey: String?
     ) {
         this.key = key
@@ -178,28 +189,74 @@ internal class BetterPlayer(
         } else {
             drmSessionManager = null
         }
-        if (isHTTP(uri)) {
-            dataSourceFactory = getDataSourceFactory(userAgent, headers)
-            if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
-                dataSourceFactory = CacheDataSourceFactory(
-                    context,
-                    maxCacheSize,
-                    maxCacheFileSize,
-                    dataSourceFactory
-                )
+        if (networkType != null) {
+            // Network type was specified, so use a custom data factory on the correct network.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getOkHttpDataSourceFactory(context, networkType, uri, formatHint, cacheKey, overriddenDuration, result);
             }
         } else {
-            dataSourceFactory = DefaultDataSourceFactory(context, userAgent)
+            if (isHTTP(uri)) {
+                dataSourceFactory = getDataSourceFactory(userAgent, headers)
+                if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
+                    dataSourceFactory = CacheDataSourceFactory(
+                            context,
+                            maxCacheSize,
+                            maxCacheFileSize,
+                            dataSourceFactory
+                    )
+                }
+            } else {
+                dataSourceFactory = DefaultDataSourceFactory(context, userAgent)
+            }
+            finishMediaSourceSetup(context, uri, formatHint, cacheKey, overriddenDuration, dataSourceFactory, result);
         }
-        val mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, cacheKey, context)
-        if (overriddenDuration != 0L) {
-            val clippingMediaSource = ClippingMediaSource(mediaSource, 0, overriddenDuration * 1000)
-            exoPlayer!!.setMediaSource(clippingMediaSource)
-        } else {
-            exoPlayer!!.setMediaSource(mediaSource)
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private fun getOkHttpDataSourceFactory(context: Context, networkType: DataSourceUtils.NetworkType, uri: Uri, formatHint: String?, cacheKey: String?, overriddenDuration: Long, result: Result) {
+        val networkRequestBuilder: NetworkRequest.Builder = NetworkRequest.Builder()
+        if (networkType === DataSourceUtils.NetworkType.CELLULAR) {
+            networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+        } else if (networkType === DataSourceUtils.NetworkType.WIFI) {
+            networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         }
-        exoPlayer.prepare()
-        result.success(null)
+        val networkRequest: NetworkRequest = networkRequestBuilder.build()
+        val connectivityManager: ConnectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager.requestNetwork(networkRequest, object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                super.onAvailable(network)
+                val client: OkHttpClient = OkHttpClient.Builder()
+                        .socketFactory(network.getSocketFactory()).build()
+                finishMediaSourceSetup(context, uri, formatHint, cacheKey, overriddenDuration, OkHttpDataSource.Factory(client), result)
+
+                // do remove callback. if you forget to remove it, you will received callback when cellular connect again.
+                connectivityManager.unregisterNetworkCallback(this)
+            }
+
+            override fun onUnavailable() {
+                super.onUnavailable()
+                result.error("ERROR", "Wifi network unavailable.", null)
+
+                // do remove callback
+                connectivityManager.unregisterNetworkCallback(this)
+            }
+        })
+    }
+
+    private fun finishMediaSourceSetup(context: Context, uri: Uri, formatHint: String?, cacheKey: String?, overriddenDuration: Long, factory: DataSource.Factory, result: Result) {
+        val handler = Handler(Looper.getMainLooper())
+        val runnable = Runnable {
+            val mediaSource: MediaSource = buildMediaSource(uri, factory, formatHint, cacheKey, context)
+            if (overriddenDuration != 0L) {
+                val clippingMediaSource = ClippingMediaSource(mediaSource, 0, overriddenDuration * 1000)
+                exoPlayer!!.setMediaSource(clippingMediaSource)
+            } else {
+                exoPlayer!!.setMediaSource(mediaSource)
+            }
+            exoPlayer.prepare()
+            result.success(null)
+        }
+        handler.post(runnable)
     }
 
     fun setupPlayerNotification(

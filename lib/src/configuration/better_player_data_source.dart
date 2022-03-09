@@ -1,6 +1,7 @@
 import 'package:better_player/src/configuration/better_player_buffering_configuration.dart';
 import 'package:better_player/src/configuration/better_player_data_source_type.dart';
 import 'package:better_player/src/configuration/better_player_drm_configuration.dart';
+import 'package:better_player/src/configuration/better_player_network_type.dart';
 import 'package:better_player/src/configuration/better_player_notification_configuration.dart';
 import 'package:better_player/src/configuration/better_player_video_format.dart';
 import 'package:better_player/src/subtitles/better_player_subtitles_source.dart';
@@ -76,6 +77,9 @@ class BetterPlayerDataSource {
   ///platform.
   final BetterPlayerBufferingConfiguration bufferingConfiguration;
 
+  /// **Android Only: Can specify the video to be streamed over wifi or cellular only
+  final NetworkType? networkType;
+
   BetterPlayerDataSource(
     this.type,
     this.url, {
@@ -99,6 +103,7 @@ class BetterPlayerDataSource {
     this.drmConfiguration,
     this.placeholder,
     this.bufferingConfiguration = const BetterPlayerBufferingConfiguration(),
+    this.networkType,
   }) : assert(
             (type == BetterPlayerDataSourceType.network ||
                     type == BetterPlayerDataSourceType.file) ||
@@ -126,6 +131,7 @@ class BetterPlayerDataSource {
     Widget? placeholder,
     BetterPlayerBufferingConfiguration bufferingConfiguration =
         const BetterPlayerBufferingConfiguration(),
+    NetworkType? networkType,
   }) {
     return BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
@@ -144,6 +150,7 @@ class BetterPlayerDataSource {
       drmConfiguration: drmConfiguration,
       placeholder: placeholder,
       bufferingConfiguration: bufferingConfiguration,
+      networkType: networkType,
     );
   }
 

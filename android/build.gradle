@@ -10,6 +10,8 @@ buildscript {
     ext.coreVersion = "1.6.0"
     ext.gradleVersion = "4.1.0"
     ext.kotlinVersion = "1.5.31"
+    ext.okhttpVersion = "4.9.0"
+    ext.exoplayerOkHttpVersion = "2.15.1"
 
     repositories {
         google()
@@ -55,6 +57,8 @@ android {
         implementation "com.google.android.exoplayer:exoplayer-smoothstreaming:$exoPlayerVersion"
         implementation "com.google.android.exoplayer:exoplayer-ui:$exoPlayerVersion"
         implementation "com.google.android.exoplayer:extension-mediasession:$exoPlayerVersion"
+        implementation "com.google.android.exoplayer:extension-okhttp:$exoplayerOkHttpVersion"
+        implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
         implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion"
         implementation "androidx.lifecycle:lifecycle-common:$lifecycleVersion"
         implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"

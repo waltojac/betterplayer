@@ -7,6 +7,7 @@ import 'dart:async';
 
 // Flutter imports:
 import 'package:better_player/src/configuration/better_player_buffering_configuration.dart';
+import 'package:better_player/src/video_player/video_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'method_channel_video_player.dart';
@@ -225,6 +226,7 @@ class DataSource {
     this.certificateUrl,
     this.drmHeaders,
     this.activityName,
+    this.networkType,
     this.clearKey,
     this.videoExtension,
   }) : assert(uri == null || asset == null);
@@ -300,6 +302,8 @@ class DataSource {
   final Map<String, String>? drmHeaders;
 
   final String? activityName;
+
+  final String? networkType;
 
   final String? clearKey;
 

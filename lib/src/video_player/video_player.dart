@@ -5,7 +5,7 @@
 // Dart imports:
 import 'dart:async';
 import 'dart:io';
-import 'package:better_player/src/configuration/better_player_buffering_configuration.dart';
+import 'package:better_player/better_player.dart';
 import 'package:better_player/src/video_player/video_player_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -313,7 +313,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// The URI for the video is given by the [dataSource] argument and must not be
   /// null.
   /// **Android only**: The [formatHint] option allows the caller to override
-  /// the video format detection code.
+  /// the video format detection code. The [networkType] options allows the caller
+  /// to specify if they want the video to stream only over "WIFI" or "CELLULAR".
   /// ClearKey DRM only supported on Android.
   Future<void> setNetworkDataSource(
     String dataSource, {
@@ -333,6 +334,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     String? certificateUrl,
     Map<String, String>? drmHeaders,
     String? activityName,
+    NetworkType? networkType,
     String? clearKey,
     String? videoExtension,
   }) {
@@ -356,6 +358,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         certificateUrl: certificateUrl,
         drmHeaders: drmHeaders,
         activityName: activityName,
+        networkType: networkType?.value(),
         clearKey: clearKey,
         videoExtension: videoExtension,
       ),

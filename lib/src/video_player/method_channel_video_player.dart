@@ -93,6 +93,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
           'certificateUrl': dataSource.certificateUrl,
           'drmHeaders': dataSource.drmHeaders,
           'activityName': dataSource.activityName,
+          'networkType': dataSource.networkType,
           'clearKey': dataSource.clearKey,
           'videoExtension': dataSource.videoExtension,
         };

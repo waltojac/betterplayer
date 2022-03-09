@@ -9,6 +9,11 @@ internal object DataSourceUtils {
     private const val USER_AGENT = "User-Agent"
     private const val USER_AGENT_PROPERTY = "http.agent"
 
+    enum class NetworkType {
+        WIFI,
+        CELLULAR,
+    }
+
     @JvmStatic
     fun getUserAgent(headers: Map<String, String>?): String {
         var userAgent = System.getProperty(USER_AGENT_PROPERTY)

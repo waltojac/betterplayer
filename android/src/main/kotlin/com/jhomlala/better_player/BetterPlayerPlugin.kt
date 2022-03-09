@@ -258,7 +258,10 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 0L,
                 overriddenDuration.toLong(),
                 null,
-                null, null, null
+                null,
+                null,
+                null,
+                null
             )
         } else {
             val useCache = getParameter(dataSource, USE_CACHE_PARAMETER, false)
@@ -274,6 +277,8 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             val clearKey = getParameter<String?>(dataSource, DRM_CLEARKEY_PARAMETER, null)
             val drmHeaders: Map<String, String> =
                 getParameter(dataSource, DRM_HEADERS_PARAMETER, HashMap())
+            val networkTypeString: String? = getParameter(dataSource, NETWORK_TYPE_KEY, null)
+            val networkType: DataSourceUtils.NetworkType? = if (networkTypeString != null) DataSourceUtils.NetworkType.valueOf(networkTypeString) else null
             player.setDataSource(
                 flutterState!!.applicationContext,
                 key,
@@ -288,6 +293,7 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 licenseUrl,
                 drmHeaders,
                 cacheKey,
+                networkType,
                 clearKey
             )
         }
@@ -524,6 +530,7 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         const val BUFFER_FOR_PLAYBACK_MS = "bufferForPlaybackMs"
         const val BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = "bufferForPlaybackAfterRebufferMs"
         const val CACHE_KEY_PARAMETER = "cacheKey"
+        const val NETWORK_TYPE_KEY = "networkType"
         private const val INIT_METHOD = "init"
         private const val CREATE_METHOD = "create"
         private const val SET_DATA_SOURCE_METHOD = "setDataSource"
